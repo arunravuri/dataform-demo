@@ -1,0 +1,5 @@
+config {
+    type: "declaration",
+    description: "Replicated rate_band table",
+    schema: config.env.declarationSchema
+}

@@ -1,0 +1,5 @@
+config {
+    type: "declaration",
+    description: "Replicated parent_account table",
+    schema: config.env.declarationSchema
+}

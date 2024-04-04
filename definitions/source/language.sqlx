@@ -1,0 +1,5 @@
+config {
+    type: "declaration",
+    description: "Replicated language table",
+    schema: config.env.declarationSchema
+}

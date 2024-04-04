@@ -1,0 +1,75 @@
+config {
+  "type": "view",
+  "name": "volume_delivered_kpi",
+  "schema": dataform.projectConfig.vars.reportDataset
+}
+
+WITH min_transition_log_ids AS (
+    SELECT
+        tl.deliverable_id,
+        MIN(tl.transition_log_id) AS min_transition_log_id
+    FROM
+        ${ref("transition_log")} tl
+            JOIN
+        ${ref("stage")} s2a ON tl.from_stage_id = s2a.stage_id
+            JOIN
+        ${ref("stage")} s2b ON tl.to_stage_id = s2b.stage_id
+            JOIN
+        ${ref("deliverable")} d2 ON tl.deliverable_id = d2.deliverable_id
+    WHERE
+        s2a.stage_type  IN ('Production', 'Training')
+        AND s2b.stage_type = 'Client'
+    GROUP BY
+        tl.deliverable_id
+)
+
+SELECT
+    pa.parent_account_id AS parentAccountId,
+    pa.parent_account_name AS parentAccountName,
+    p.project_id AS projectId,
+    p.project_name AS projectName,
+    d.language_code AS languageCode,
+    l.language_name AS languageName,
+    r.rate_band_id AS rateBandId,
+    r.rate_band_name AS rateBandName,
+    SAFE_CAST(tl.create_date AS date) AS date,
+    'delivered' AS status,
+    COUNT(*) AS total
+FROM
+    ${ref("transition_log")} tl
+    JOIN
+        ${ref("deliverable")} d ON d.deliverable_id = tl.deliverable_id
+    JOIN
+        ${ref("parent_deliverable")} pd ON pd.parent_deliverable_id = d.parent_deliverable_id
+    JOIN
+        ${ref("batch")} b ON pd.batch_id = b.batch_id
+    JOIN
+        ${ref("project")} p ON p.project_id = b.project_id
+    JOIN
+        ${ref("order_form")} ofm ON p.order_form_id = ofm.order_form_id
+    JOIN
+        ${ref("account")} a ON a.account_id=ofm.account_id
+    JOIN
+        ${ref("parent_account")} pa ON pa.parent_account_id=a.parent_account_id
+    JOIN
+        ${ref("rate_band")} r ON r.rate_band_id=pd.rate_band_id
+    JOIN
+        ${ref("stage")} s_from ON s_from.stage_id = tl.from_stage_id
+    JOIN
+        ${ref("stage")} s_to ON s_to.stage_id = tl.to_stage_id
+    JOIN
+        ${ref("language")} l ON l.language_code = d.language_code
+    JOIN
+        min_transition_log_ids min_tl ON tl.deliverable_id = min_tl.deliverable_id
+WHERE
+    d.archived = 0
+  AND pd.archived = 0
+  AND d.allocated = 1
+  AND s_from.stage_type IN ('Production', 'Training')
+  AND s_to.stage_type = 'Client'
+  AND tl.transition_log_id = min_tl.min_transition_log_id
+GROUP BY
+    1,2,3,4,5,6,7,8,9
+ORDER BY
+    parentAccountName ASC,
+    date DESC

@@ -1,0 +1,5 @@
+config {
+    type: "declaration",
+    description: "Replicated project table",
+    schema: config.env.declarationSchema
+}

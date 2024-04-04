@@ -1,0 +1,9 @@
+config {
+  "type": "table",
+  "name": "volumue_tracker_kpi",
+  "schema": dataform.projectConfig.vars.reportDataset
+}
+
+SELECT * FROM ${ref("volume_delivered_kpi")}
+UNION ALL
+SELECT * FROM ${ref("volume_processed_kpi")}

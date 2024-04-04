@@ -1,0 +1,6 @@
+defaultProject: fit-aloe-417012
+defaultDataset: quill_cloud
+datasetSuffix: staging
+defaultLocation: US
+vars:
+  reportDataset: scribe_dashboard_reports
