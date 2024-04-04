@@ -1,6 +1,7 @@
 config {
   "type": "view",
   "name": "volume_processed_kpi",
+  "tags": ["volume_tracker_kpi", "processed"],
   "schema": dataform.projectConfig.vars.reportDataset
 }
 

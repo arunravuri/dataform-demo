@@ -1,6 +1,7 @@
 config {
   "type": "table",
   "name": "volumue_tracker_kpi",
+  "tags": ["volume_tracker_kpi", "daily"],
   "schema": dataform.projectConfig.vars.reportDataset
 }
 
