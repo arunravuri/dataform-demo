@@ -1,0 +1,5 @@
+config {
+    type: "declaration",
+    description: "Replicated context table",
+    schema: config.env.translationDeclarationSchema
+}

@@ -1,0 +1,5 @@
+config {
+    type: "declaration",
+    description: "Replicated segment table",
+    schema: config.env.translationDeclarationSchema
+}

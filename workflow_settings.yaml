@@ -4,3 +4,4 @@ datasetSuffix: staging
 defaultLocation: US
 vars:
   reportDataset: scribe_dashboard_reports
+  translationDataset: quill_cloud_translation
