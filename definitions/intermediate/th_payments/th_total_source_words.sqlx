@@ -1,0 +1,54 @@
+config {
+    type: "view",
+    name: "th_total_source_words",
+    tags: ["th_payments_report", "monthly"],
+    columns: {
+        batch_id: "Batch identifier",
+        language_code: "source field content language code",
+        bullets_word_count: "total count of words in bullets text",
+        prose_word_count: "total count of words in other than bullets text"
+
+    },
+    dependencies: ["th_completed_batches"],
+    schema: dataform.projectConfig.vars.reportDataset
+}
+
+SELECT
+    pd.batch_id,
+    d.language_code AS languageCode,
+    SUM(CASE WHEN tf.task_field_format IN ('HTML (Translation memory)', 'TM (bullets)') THEN ARRAY_LENGTH(SPLIT(TRIM(REGEXP_REPLACE(REGEXP_REPLACE(pdsf.field_value, r'<[^>]*>', ''), r'\s+', ' ')), ' ')) ELSE 0 END) AS bullets_word_count,
+    SUM(CASE WHEN tf.task_field_format NOT IN ('HTML (Translation memory)', 'TM (bullets)') THEN ARRAY_LENGTH(SPLIT(TRIM(REGEXP_REPLACE(REGEXP_REPLACE(pdsf.field_value, r'<[^>]*>', ''), r'\s+', ' ')), ' ')) ELSE 0 END) AS prose_word_count
+FROM
+    ${ref("task_field")} tf
+    JOIN
+        ${ref("source_field")} sf ON sf.task_field_id = tf.task_field_id
+    JOIN
+        ${ref("parent_deliverable_source_field")} pdsf ON pdsf.source_field_id = sf.source_field_id
+    JOIN
+        ${ref("parent_deliverable")} pd ON pd.parent_deliverable_id = pdsf.parent_deliverable_id
+    JOIN
+        ${ref("deliverable")} d ON d.parent_deliverable_id = pd.parent_deliverable_id
+    JOIN
+        ${ref("assignment")} a ON a.deliverable_id = d.deliverable_id
+    JOIN
+        ${ref("person")} p ON p.person_id = a.person_id
+    JOIN
+        ${ref("stage")} s ON a.stage_id = s.stage_id
+    JOIN 
+        ${ref("th_completed_batches")} cb ON cb.batch_id = pd.batch_id
+WHERE
+    s.is_primary = 1
+    AND a.reassigned = 0
+    AND a.archived = 0
+    AND NOT EXISTS (
+        SELECT
+            1
+        FROM
+            ${ref("parent_deliverable_source_field")} pdsf2
+        WHERE
+            pdsf2.parent_deliverable_id = pdsf.parent_deliverable_id
+            AND pdsf2.source_field_id = pdsf.source_field_id
+            AND pdsf2.parent_deliverable_source_field_id > pdsf.parent_deliverable_source_field_id
+         )
+GROUP BY
+    pd.batch_id, d.language_code

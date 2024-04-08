@@ -1,0 +1,5 @@
+config {
+    type: "declaration",
+    description: "Replicated task_field table",
+    schema: config.env.declarationSchema
+}

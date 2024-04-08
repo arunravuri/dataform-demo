@@ -1,0 +1,5 @@
+config {
+    type: "declaration",
+    description: "Replicated parent_deliverable_source_field table",
+    schema: config.env.declarationSchema
+}

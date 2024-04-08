@@ -9,6 +9,7 @@ config {
         new_source_segment_word_count: "total new source word count for a target language"
 
     },
+    dependencies: ["th_completed_batches"],
     schema: dataform.projectConfig.vars.reportDataset
 }
 
@@ -22,25 +23,19 @@ WITH
   FROM
     ${ref("translation")} t
   JOIN
-    ${ref("segment")} SOURCE
-  ON
-    t.source_segment_id = source.segment_id
+    ${ref("segment")} source ON t.source_segment_id = source.segment_id
   JOIN
-    ${ref("segment")} TARGET
-  ON
-    t.translated_segment_id = target.segment_id
+    ${ref("segment")} target ON t.translated_segment_id = target.segment_id
   JOIN
-    ${ref("deliverable")} d
-  ON
-    t.deliverable_id = d.deliverable_id
+    ${ref("deliverable")} d ON t.deliverable_id = d.deliverable_id
   JOIN
-    ${ref("parent_deliverable")} pd
-  ON
-    pd.parent_deliverable_id = d.parent_deliverable_id
+    ${ref("parent_deliverable")} pd ON pd.parent_deliverable_id = d.parent_deliverable_id
   GROUP BY
     source.segment_id,
     target.language_code,
     pd.batch_id )
+
+    
 SELECT
   pd.batch_id,
   source.language_code AS source_language,
@@ -56,39 +51,29 @@ SELECT
 FROM
   ${ref("translation")} t
 JOIN
-  ${ref("context")} c
-ON
-  t.context_id = c.context_id
+  ${ref("context")} c ON t.context_id = c.context_id
 JOIN
-  ${ref("segment")} SOURCE
-ON
-  t.source_segment_id = source.segment_id
+  ${ref("segment")} source ON t.source_segment_id = source.segment_id
 JOIN
-  ${ref("segment")} TARGET
-ON
-  t.translated_segment_id = target.segment_id
+  ${ref("segment")} target ON t.translated_segment_id = target.segment_id
 JOIN
-  ${ref("person")} p
-ON
-  t.person_id = p.person_id
+  ${ref("person")} p ON t.person_id = p.person_id
 JOIN
-  ${ref("deliverable")} d
-ON
-  t.deliverable_id = d.deliverable_id
+  ${ref("deliverable")} d ON t.deliverable_id = d.deliverable_id
 JOIN
-  ${ref("parent_deliverable")} pd
-ON
-  pd.parent_deliverable_id = d.parent_deliverable_id
-JOIN
-  MaxDates
-ON
-  t.create_date = MaxDates.max_create_date
-  AND source.segment_id = MaxDates.segment_id
-  AND target.language_code = MaxDates.language_code
-  AND pd.batch_id = MaxDates.batch_id
+  ${ref("parent_deliverable")} pd ON pd.parent_deliverable_id = d.parent_deliverable_id
+JOIN MaxDates ON
+    t.create_date = MaxDates.max_create_date
+    AND source.segment_id = MaxDates.segment_id
+    AND target.language_code = MaxDates.language_code
+    AND pd.batch_id = MaxDates.batch_id
+JOIN 
+    ${ref("th_completed_batches")} cb ON cb.batch_id = pd.batch_id
+
 GROUP BY
   pd.batch_id,
   source.language_code,
   target.language_code
+  
 ORDER BY
   pd.batch_id ASC
