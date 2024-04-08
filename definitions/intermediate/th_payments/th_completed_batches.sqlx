@@ -11,7 +11,7 @@ config {
 
 SELECT
     b.batch_id,
-    DATE(MAX(tl.create_date)) AS completed_date
+    DATE(MIN(tl.create_date)) AS completed_date
 FROM
     ${ref("transition_log")} tl
     JOIN

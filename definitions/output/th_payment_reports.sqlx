@@ -3,9 +3,9 @@ config {
   name: "th_payment_reports",
   tags: ["th_payment_reports", "monthly"],
   columns: {
-    batch_id: "Parent account identifier",
-    batch_name: "Parent account name",
-    completed_date: "Project identifier",
+    batch_id: "Batch identifier",
+    batch_name: "Batch name",
+    completed_date: "Batch Completed date",
     source_language: "Project name",
     target_language: "Language code",
     new_source_segment_word_count: "Language name",
