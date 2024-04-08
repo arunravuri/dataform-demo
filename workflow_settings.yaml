@@ -1,0 +1,9 @@
+defaultProject: fit-aloe-417012
+defaultDataset: quill_cloud
+datasetSuffix: staging
+defaultAssertionDataset: scribe_dashboard_reports_assertions
+defaultLocation: US
+vars:
+  reportDataset: scribe_dashboard_reports
+  translationDataset: quill_cloud_translation
+  thPaymentProjects: "1029,1028,1207,1192,1027"
