@@ -6,11 +6,11 @@ config {
     batch_id: "Batch identifier",
     batch_name: "Batch name",
     completed_date: "Batch Completed date",
-    source_language: "Project name",
-    target_language: "Language code",
-    new_source_segment_word_count: "Language name",
-    bullets_word_count: "Rate band identifier",
-    prose_word_count: "Rate band name"
+    source_language: "source languge",
+    target_language: "target language",
+    new_source_segment_word_count: "word count from source segments",
+    bullets_word_count: "word count of bullets text in parent_deliverable_source_field",
+    prose_word_count: "word count of text other than bullets in parent_deliverable_source_field"
   },
   assertions: {
     nonNull: [
