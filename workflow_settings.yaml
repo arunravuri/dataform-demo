@@ -6,3 +6,4 @@ defaultLocation: US
 vars:
   reportDataset: scribe_dashboard_reports
   translationDataset: quill_cloud_translation
+  thPaymentProjects: "1029,1028"

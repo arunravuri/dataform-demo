@@ -1,0 +1,5 @@
+config {
+    type: "declaration",
+    description: "Replicated person table",
+    schema: config.env.declarationSchema
+}

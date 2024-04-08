@@ -1,0 +1,52 @@
+config {
+    type: "view",
+    name: "th_completed_batches",
+    tags: ["th_payments_report", "monthly"],
+    columns: {
+        batch_id: "Batch identifier",
+        completed_date: "Batch completed date"
+    },
+    schema: dataform.projectConfig.vars.reportDataset
+}
+
+SELECT
+    b.batch_id,
+    DATE(MAX(tl.create_date)) AS completedDate
+FROM
+    ${ref("transition_log")} tl
+    JOIN
+        ${ref("deliverable")} d ON d.deliverable_id = tl.deliverable_id
+    JOIN
+        ${ref("parent_deliverable")} pd ON pd.parent_deliverable_id = d.parent_deliverable_id
+    JOIN
+        ${ref("batch")} b ON pd.batch_id = b.batch_id
+    JOIN
+        ${ref("project")} p ON p.project_id = b.project_id
+    JOIN
+        ${ref("stage")} s1 ON s1.stage_id = tl.from_stage_id
+    JOIN
+        ${ref("stage")} s2 ON s2.stage_id = tl.to_stage_id
+WHERE
+    s2.is_final = 1
+    AND s2.stage_type = 'Client'
+    AND s2.stage_name = 'Approved'
+    AND b.archived = 0
+    AND d.archived = 0
+    AND pd.archived = 0
+    AND p.project_id IN (${config.env.thPaymentProjects})
+    AND b.batch_id NOT IN (
+        SELECT DISTINCT pd2.batch_id
+        FROM 
+            ${ref("deliverable")} d2
+        JOIN 
+            ${ref("stage")} s2 ON s2.stage_id = d2.current_stage_id
+        JOIN 
+            ${ref("parent_deliverable")} pd2 ON pd2.parent_deliverable_id = d2.parent_deliverable_id
+        WHERE
+            pd2.batch_id = b.batch_id
+            AND s2.is_final = 0
+            AND pd2.archived = 0
+            AND d2.archived = 0
+    )
+GROUP BY
+    b.batch_id

@@ -1,0 +1,94 @@
+config {
+    type: "view",
+    name: "th_new_source_segments",
+    tags: ["th_payments_report", "monthly"],
+    columns: {
+        batch_id: "Batch identifier",
+        source_language: "segment word source language",
+        target_anguage: "segment word translation language",
+        new_source_segment_word_count: "total new source word count for a target language"
+
+    },
+    schema: dataform.projectConfig.vars.reportDataset
+}
+
+WITH
+  MaxDates AS (
+  SELECT
+    MAX(t.create_date) AS max_create_date,
+    source.segment_id,
+    target.language_code,
+    pd.batch_id
+  FROM
+    ${ref("translation")} t
+  JOIN
+    ${ref("segment")} SOURCE
+  ON
+    t.source_segment_id = source.segment_id
+  JOIN
+    ${ref("segment")} TARGET
+  ON
+    t.translated_segment_id = target.segment_id
+  JOIN
+    ${ref("deliverable")} d
+  ON
+    t.deliverable_id = d.deliverable_id
+  JOIN
+    ${ref("parent_deliverable")} pd
+  ON
+    pd.parent_deliverable_id = d.parent_deliverable_id
+  GROUP BY
+    source.segment_id,
+    target.language_code,
+    pd.batch_id )
+SELECT
+  pd.batch_id,
+  source.language_code AS source_language,
+  target.language_code AS target_anguage,
+  SUM(
+        ARRAY_LENGTH(
+            SPLIT(
+                REGEXP_REPLACE(source.segment_text, r'(?:\r\n|\r|\n)', ' ')
+                , ' '
+            )
+        )
+    ) AS new_source_segment_word_count
+FROM
+  ${ref("translation")} t
+JOIN
+  ${ref("context")} c
+ON
+  t.context_id = c.context_id
+JOIN
+  ${ref("segment")} SOURCE
+ON
+  t.source_segment_id = source.segment_id
+JOIN
+  ${ref("segment")} TARGET
+ON
+  t.translated_segment_id = target.segment_id
+JOIN
+  ${ref("person")} p
+ON
+  t.person_id = p.person_id
+JOIN
+  ${ref("deliverable")} d
+ON
+  t.deliverable_id = d.deliverable_id
+JOIN
+  ${ref("parent_deliverable")} pd
+ON
+  pd.parent_deliverable_id = d.parent_deliverable_id
+JOIN
+  MaxDates
+ON
+  t.create_date = MaxDates.max_create_date
+  AND source.segment_id = MaxDates.segment_id
+  AND target.language_code = MaxDates.language_code
+  AND pd.batch_id = MaxDates.batch_id
+GROUP BY
+  pd.batch_id,
+  source.language_code,
+  target.language_code
+ORDER BY
+  pd.batch_id ASC
