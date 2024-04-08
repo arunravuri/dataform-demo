@@ -13,8 +13,7 @@ config {
         rate_band_name: "Rate band name",
         transition_date: "Delivered date",
         status:"delivered ",
-        total: "Total delivered count"
-        
+        total: "Total delivered count"  
     },
     assertions: {
         nonNull: [
