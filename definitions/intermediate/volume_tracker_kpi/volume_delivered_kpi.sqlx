@@ -1,8 +1,33 @@
 config {
-  "type": "view",
-  "name": "volume_delivered_kpi",
-  "tags": ["volume_tracker_kpi", "daily"],
-  "schema": dataform.projectConfig.vars.reportDataset
+    type: "view",
+    name: "volume_delivered_kpi",
+    tags: ["volume_tracker_kpi", "daily"],
+    columns: {
+        parent_account_id: "Parent account identifier",
+        parent_account_name: "Parent account name",
+        project_id: "Project identifier",
+        project_name: "Project name",
+        language_code: "Language code",
+        language_name: "Language name",
+        rate_band_id: "Rate band identifier",
+        rate_band_name: "Rate band name",
+        transition_date: "Delivered date",
+        status:"delivered ",
+        total: "Total delivered count"
+        
+    },
+    assertions: {
+        nonNull: [
+            "parent_account_id",
+            "project_id",
+            "language_code",
+            "rate_band_id",
+            "transition_date",
+            "status",
+            "total"
+        ]
+    },
+    schema: dataform.projectConfig.vars.reportDataset
 }
 
 WITH min_transition_log_ids AS (
@@ -25,15 +50,15 @@ WITH min_transition_log_ids AS (
 )
 
 SELECT
-    pa.parent_account_id AS parentAccountId,
-    pa.parent_account_name AS parentAccountName,
-    p.project_id AS projectId,
-    p.project_name AS projectName,
-    d.language_code AS languageCode,
-    l.language_name AS languageName,
-    r.rate_band_id AS rateBandId,
-    r.rate_band_name AS rateBandName,
-    SAFE_CAST(tl.create_date AS date) AS date,
+    pa.parent_account_id AS parent_account_id,
+    pa.parent_account_name AS parent_account_name,
+    p.project_id AS project_id,
+    p.project_name AS project_name,
+    d.language_code AS language_code,
+    l.language_name AS language_name,
+    r.rate_band_id AS rate_band_id,
+    r.rate_band_name AS rate_band_name,
+    SAFE_CAST(tl.create_date AS date) AS transition_date,
     'delivered' AS status,
     COUNT(*) AS total
 FROM
@@ -72,5 +97,5 @@ WHERE
 GROUP BY
     1,2,3,4,5,6,7,8,9
 ORDER BY
-    parentAccountName ASC,
-    date DESC
+    parent_account_name ASC,
+    transition_date DESC
