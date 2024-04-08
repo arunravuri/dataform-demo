@@ -1,7 +1,7 @@
 config {
     type: "view",
     name: "th_completed_batches",
-    tags: ["th_payments_report", "monthly"],
+    tags: ["th_payment_reports", "monthly"],
     columns: {
         batch_id: "Batch identifier",
         completed_date: "Batch completed date"

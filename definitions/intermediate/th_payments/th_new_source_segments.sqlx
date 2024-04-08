@@ -1,11 +1,11 @@
 config {
     type: "view",
     name: "th_new_source_segments",
-    tags: ["th_payments_report", "monthly"],
+    tags: ["th_payment_reports", "monthly"],
     columns: {
         batch_id: "Batch identifier",
         source_language: "segment word source language",
-        target_anguage: "segment word translation language",
+        target_language: "segment word translation language",
         new_source_segment_word_count: "total new source word count for a target language"
 
     },
@@ -39,7 +39,7 @@ WITH
 SELECT
   pd.batch_id,
   source.language_code AS source_language,
-  target.language_code AS target_anguage,
+  target.language_code AS target_language,
   SUM(
         ARRAY_LENGTH(
             SPLIT(
@@ -72,8 +72,8 @@ JOIN
 
 GROUP BY
   pd.batch_id,
-  source.language_code,
-  target.language_code
+  source_language,
+  target_language
   
 ORDER BY
   pd.batch_id ASC

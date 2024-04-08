@@ -1,0 +1,44 @@
+config {
+  type: "table",
+  name: "th_payment_reports",
+  tags: ["th_payment_reports", "monthly"],
+  columns: {
+    batch_id: "Parent account identifier",
+    batch_name: "Parent account name",
+    completed_date: "Project identifier",
+    source_language: "Project name",
+    target_language: "Language code",
+    new_source_segment_word_count: "Language name",
+    bullets_word_count: "Rate band identifier",
+    prose_word_count: "Rate band name"
+  },
+  assertions: {
+    nonNull: [
+        "batch_id",
+        "target_language"
+    ]
+  },
+  schema: dataform.projectConfig.vars.reportDataset
+}
+
+SELECT
+    cb.batch_id,
+    b.batch_name,
+    cb.completed_date,
+    ns.source_language,
+    ns.target_language,
+    ns.new_source_segment_word_count,
+    ts.bullets_word_count,
+    ts.prose_word_count
+FROM
+    ${ref("th_completed_batches")} cb
+    JOIN
+        ${ref("th_new_source_segments")} ns ON cb.batch_id = ns.batch_id
+    JOIN
+        ${ref("th_total_source_words")} ts ON ts.batch_id = cb.batch_id 
+            AND ts.language_code = ns.target_language
+    JOIN
+        ${ref("batch")} b ON b.batch_id = cb.batch_id
+ORDER BY
+    cb.completed_date DESC,
+    cb.batch_id ASC
