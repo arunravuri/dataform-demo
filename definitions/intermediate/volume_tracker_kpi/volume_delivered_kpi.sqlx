@@ -15,17 +15,6 @@ config {
         status:"delivered ",
         total: "Total delivered count"  
     },
-    assertions: {
-        nonNull: [
-            "parent_account_id",
-            "project_id",
-            "language_code",
-            "rate_band_id",
-            "transition_date",
-            "status",
-            "total"
-        ]
-    },
     schema: dataform.projectConfig.vars.reportDataset
 }
 
