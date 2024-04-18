@@ -8,6 +8,7 @@ config {
     completed_date: "Batch Completed date",
     source_language: "source languge",
     target_language: "target language",
+    language_name: "Target language name",
     new_source_segment_word_count: "word count from source segments",
     bullets_word_count: "word count of bullets text in parent_deliverable_source_field",
     prose_word_count: "word count of text other than bullets in parent_deliverable_source_field"
@@ -27,6 +28,7 @@ SELECT
     cb.completed_date,
     ns.source_language,
     ns.target_language,
+    l.language_name,
     ns.new_source_segment_word_count,
     ts.bullets_word_count,
     ts.prose_word_count
@@ -39,6 +41,8 @@ FROM
             AND ts.language_code = ns.target_language
     JOIN
         ${ref("batch")} b ON b.batch_id = cb.batch_id
+    JOIN
+        ${ref("language")} l ON ns.target_language = l.language_code
 ORDER BY
     cb.completed_date DESC,
     cb.batch_id ASC
