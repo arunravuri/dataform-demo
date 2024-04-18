@@ -1,0 +1,44 @@
+config {
+    type: "view",
+    name: "lv_new_source_segments",
+    tags: ["lv_delivered_words_report", "monthly"],
+    columns: {
+        language_code: "segment word translation language",
+        approved_month: "Deliverable approved month",
+        new_source_segment_word_count: "total new source word count for a target language"
+
+    },
+    dependencies: ["lv_approved_batches"],
+    schema: dataform.projectConfig.vars.reportDataset
+}
+
+
+SELECT
+    unique_segments.language_code,
+    unique_segments.approved_month,
+    SUM(new_source_segment_word_count) AS new_source_segment_word_count
+FROM
+    (
+    SELECT
+        target.language_code,
+        ad.approved_month,
+        ARRAY_LENGTH(
+          SPLIT(${config.env.routineDataset}.stripHtmlTags(source.segment_text),' ')
+        ) AS new_source_segment_word_count
+    FROM
+        ${ref("translation")} t
+        JOIN ${ref("context")} c ON t.context_id = c.context_id
+        JOIN ${ref("segment")} source ON t.source_segment_id = source.segment_id
+        JOIN ${ref("segment")} target ON t.translated_segment_id = target.segment_id
+        JOIN ${ref("person")} p ON t.person_id = p.person_id
+        JOIN ${ref("deliverable")} d ON t.deliverable_id = d.deliverable_id
+        JOIN ${ref("parent_deliverable")} pd ON pd.parent_deliverable_id = d.parent_deliverable_id
+        JOIN ${ref("lv_approved_batches")} ad ON pd.batch_id = ad.batch_id 
+    GROUP BY
+        target.language_code,
+        ad.approved_month,
+        source.segment_text
+    ) AS unique_segments
+GROUP BY
+    unique_segments.language_code,
+    unique_segments.approved_month

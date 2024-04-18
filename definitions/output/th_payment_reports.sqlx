@@ -1,7 +1,8 @@
 config {
   type: "table",
   name: "th_payment_reports",
-  tags: ["th_payment_reports", "monthly"],
+  description: "Table used to generate the Tommy hilfigure payments looker studio dashboard",
+  tags: ["th_payment_reports", "monthly", "weekly"],
   columns: {
     batch_id: "Batch identifier",
     batch_name: "Batch name",

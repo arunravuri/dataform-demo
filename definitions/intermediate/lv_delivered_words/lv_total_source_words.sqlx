@@ -1,0 +1,59 @@
+config {
+    type: "view",
+    name: "lv_total_source_words",
+    tags: ["lv_delivered_words_report", "monthly"],
+    columns: {
+        language_code: "source field content language code",
+        approved_month: "Deliverable approved month",
+        bullets_word_count: "total count of words in bullets text",
+        prose_word_count: "total count of words in other than bullets text"
+
+    },
+    dependencies: ["lv_approved_deliverables"],
+    schema: dataform.projectConfig.vars.reportDataset
+}
+
+SELECT
+    d.language_code,
+    ad.approved_month,
+    SUM(
+        CASE
+            WHEN tf.task_field_format IN ('HTML (Translation memory)', 'TM (bullets)', 'TM (prose)')
+                THEN ARRAY_LENGTH(
+                    SPLIT(${config.env.routineDataset}.stripHtmlTags(pdsf.field_value),' ')
+                )
+            ELSE 0
+        END
+    ) AS bullets_word_count,
+
+    SUM(
+        CASE
+            WHEN tf.task_field_format NOT IN ('HTML (Translation memory)', 'TM (bullets)', 'TM (prose)')
+                THEN ARRAY_LENGTH(
+                    SPLIT(${config.env.routineDataset}.stripHtmlTags(pdsf.field_value),' ')
+                )
+            ELSE 0
+        END
+    ) AS prose_word_count
+
+FROM
+    ${ref("task_field")} tf
+JOIN
+    ${ref("source_field")} sf ON sf.task_field_id = tf.task_field_id
+JOIN
+    ${ref("parent_deliverable_source_field")} pdsf ON pdsf.source_field_id = sf.source_field_id
+JOIN
+    ${ref("parent_deliverable")} pd ON pd.parent_deliverable_id = pdsf.parent_deliverable_id
+JOIN
+    ${ref("deliverable")} d ON d.parent_deliverable_id = pd.parent_deliverable_id
+JOIN
+    ${ref("lv_approved_deliverables")} ad ON ad.deliverable_id = d.deliverable_id
+WHERE
+    pdsf.field_value != ''
+    AND pdsf.field_value != '<p><br></p>'
+    AND NOT (tf.task_field_name LIKE '%SKU%' AND tf.task_field_name NOT LIKE '%bullet%')
+
+GROUP BY
+    d.language_code, ad.approved_month
+ORDER BY
+    d.language_code, ad.approved_month ASC

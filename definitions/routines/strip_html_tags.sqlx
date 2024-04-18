@@ -1,0 +1,13 @@
+CREATE OR REPLACE FUNCTION `${config.env.routineDataset}.stripHtmlTags`(html STRING)
+RETURNS STRING
+LANGUAGE js AS """
+  return html
+          .replace(/<[^>]*>?/gm, ' ')  // Replace HTML tags with space
+          .replace(/&nbsp;/g, ' ')     // Replace &nbsp; with space
+          .replace(/\\s+/g, ' ')       // Replace consecutive whitespace characters with space
+          .trim()                      // Trim leading and trailing whitespace
+          .split('\\n')               // Split text by newline characters
+          .map((t) => t.trim())       // Trim each line
+          .filter((t) => t)           // Filter out empty lines
+          .join(' ');                 // Join lines with space
+""";

@@ -1,7 +1,7 @@
 config {
     type: "view",
     name: "th_new_source_segments",
-    tags: ["th_payment_reports", "monthly"],
+    tags: ["th_payment_reports", "monthly", "weekly"],
     columns: {
         batch_id: "Batch identifier",
         source_language: "segment word source language",
@@ -42,10 +42,7 @@ SELECT
   target.language_code AS target_language,
   SUM(
         ARRAY_LENGTH(
-            SPLIT(
-                REGEXP_REPLACE(source.segment_text, r'(?:\r\n|\r|\n)', ' ')
-                , ' '
-            )
+          SPLIT(${config.env.routineDataset}.stripHtmlTags(source.segment_text),' ')
         )
     ) AS new_source_segment_word_count
 FROM

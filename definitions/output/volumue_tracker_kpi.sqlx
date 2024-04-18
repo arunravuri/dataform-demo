@@ -1,6 +1,7 @@
 config {
   type: "table",
   name: "volumue_tracker_kpi",
+  description: "Table used to generate the volume tracker kpi looker studio dashboard",
   tags: ["volume_tracker_kpi", "daily"],
   columns: {
     parent_account_id: "Parent account identifier",

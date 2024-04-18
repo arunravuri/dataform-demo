@@ -1,7 +1,7 @@
 config {
     type: "view",
     name: "th_total_source_words",
-    tags: ["th_payment_reports", "monthly"],
+    tags: ["th_payment_reports", "monthly", "weekly"],
     columns: {
         batch_id: "Batch identifier",
         language_code: "source field content language code",
@@ -16,8 +16,24 @@ config {
 SELECT
     pd.batch_id,
     d.language_code AS language_code,
-    SUM(CASE WHEN tf.task_field_format IN ('HTML (Translation memory)', 'TM (bullets)') THEN ARRAY_LENGTH(SPLIT(TRIM(REGEXP_REPLACE(REGEXP_REPLACE(pdsf.field_value, r'<[^>]*>', ''), r'\s+', ' ')), ' ')) ELSE 0 END) AS bullets_word_count,
-    SUM(CASE WHEN tf.task_field_format NOT IN ('HTML (Translation memory)', 'TM (bullets)') THEN ARRAY_LENGTH(SPLIT(TRIM(REGEXP_REPLACE(REGEXP_REPLACE(pdsf.field_value, r'<[^>]*>', ''), r'\s+', ' ')), ' ')) ELSE 0 END) AS prose_word_count
+    SUM(
+        CASE
+            WHEN tf.task_field_format IN ('HTML (Translation memory)', 'TM (bullets)')
+                THEN ARRAY_LENGTH(
+                    SPLIT(${config.env.routineDataset}.stripHtmlTags(pdsf.field_value),' ')
+                )
+            ELSE 0
+        END
+    ) AS bullets_word_count,
+    SUM(
+        CASE
+            WHEN tf.task_field_format NOT IN ('HTML (Translation memory)', 'TM (bullets)')
+                THEN ARRAY_LENGTH(
+                    SPLIT(${config.env.routineDataset}.stripHtmlTags(pdsf.field_value),' ')
+                )
+            ELSE 0
+        END
+    ) AS prose_word_count
 FROM
     ${ref("task_field")} tf
     JOIN

@@ -1,0 +1,39 @@
+config {
+  type: "table",
+  name: "lv_delivered_words_report",
+  description: "Table used to generate the Louis Vuitton Delivered Words looker studio dashboard",
+  tags: ["lv_delivered_words_report", "monthly"],
+  columns: {
+    language_code: "Language code",
+    approved_month: "Batch name",
+    language_name: "Target language name",
+    new_source_segment_word_count: "word count from source segments",
+    bullets_word_count: "word count of bullets text in parent_deliverable_source_field",
+    prose_word_count: "word count of text other than bullets in parent_deliverable_source_field"
+  },
+  assertions: {
+    nonNull: [
+        "language_code",
+        "approved_month"
+    ]
+  },
+  schema: dataform.projectConfig.vars.reportDataset
+}
+
+SELECT
+    ns.language_code,
+    DATE(CONCAT(ns.approved_month, '-01')) AS approved_month,
+    l.language_name,
+    ns.new_source_segment_word_count,
+    ts.bullets_word_count,
+    ts.prose_word_count
+FROM
+    ${ref("lv_new_source_segments")} ns
+    JOIN
+        ${ref("lv_total_source_words")} ts ON ts.language_code = ns.language_code 
+            AND ts.approved_month = ns.approved_month
+    JOIN
+        ${ref("language")} l ON ns.language_code = l.language_code
+ORDER BY
+    ns.approved_month DESC,
+    ns.language_code ASC
